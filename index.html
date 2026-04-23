@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .login-section {
+            text-align: center;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .user-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 3px solid #667eea;
+            object-fit: cover;
+        }
+
+        .user-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .info-row {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            width: 100px;
+            min-width: 100px;
+        }
+
+        .info-value {
+            color: #555;
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .logout-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ff5252;
+        }
+
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 10px;
+            background: #ffe0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Google OAuth Client</h1>
+        
+        <div class="error" id="error-message"></div>
+        
+        <div class="loading" id="loading">
+            <p>Loading your profile...</p>
+        </div>
+
+        <div class="login-section" id="login-section">
+            <button class="login-btn" id="login-btn">Sign in with Google</button>
+        </div>
+
+        <div class="user-section" id="user-section">
+            <div class="user-profile">
+                <img id="profile-pic" class="profile-pic" alt="Profile Picture">
+                <h2 id="user-name" style="color: #333; margin: 10px 0;"></h2>
+            </div>
+
+            <div class="user-info">
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value" id="user-email"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">User ID:</span>
+                    <span class="info-value" id="user-id"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #28a745;">✓ Authenticated</span>
+                </div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">Sign Out</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Update this with your backend endpoint
+        const BACKEND_ENDPOINT = 'http://localhost:5000/api/auth/google-login'; // Replace with your backend URL
+
+        const loginBtn = document.getElementById('login-btn');
+        loginBtn.addEventListener('click', (e) => loginWithGoogle(e));
+
+        // Login function - calls your backend
+        async function loginWithGoogle(e) {
+            e.target.disabled = true;
+            showLoading(true);
+            hideError();
+
+            try {
+                // Call your backend endpoint
+                const response = await fetch(BACKEND_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                    // Your backend will handle the OAuth flow
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Backend should return user data in this format:
+                // { name, email, id, picture }
+                if (data && data.name) {
+                    displayUserInfo(data);
+                    showUserSection();
+                } else {
+                    showError('No user data received from backend');
+                }
+            } catch (error) {
+                showError(`Login failed: ${error.message}`);
+                console.error('Login error:', error);
+            } finally {
+                e.target.disabled = false;
+                showLoading(false);
+            }
+        }
+
+        // Display user information
+        function displayUserInfo(userInfo) {
+            document.getElementById('user-name').textContent = userInfo.name || 'User';
+            document.getElementById('user-email').textContent = userInfo.email || 'N/A';
+            document.getElementById('user-id').textContent = userInfo.id || 'N/A';
+            
+            if (userInfo.picture) {
+                document.getElementById('profile-pic').src = userInfo.picture;
+            }
+        }
+
+        // UI Helper Functions
+        function showAuthSection() {
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('user-section').style.display = 'none';
+            hideError();
+        }
+
+        function showUserSection() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('user-section').style.display = 'block';
+            hideError();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        // Logout function
+        function logout() {
+            showAuthSection();
+            // Optional: Call backend to invalidate session
+            // fetch(BACKEND_ENDPOINT + '/logout', { method: 'POST' });
+        }
+    </script>
+</body>
+</html>
