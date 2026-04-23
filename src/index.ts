@@ -2,11 +2,13 @@ import http from "node:http";
 import app from "./app.js";
 import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/node-postgres';
+import fetchOidcConfiguration from "./common/config/oidc-config.js";
 
 async function main() {
   try {
     const port = process.env.PORT || 5000;
     const server = http.createServer(app);
+    await fetchOidcConfiguration();
     const db = drizzle(process.env.DATABASE_URL!);
     console.log(db)
     server.listen(port , () => {
