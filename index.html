@@ -196,7 +196,7 @@
 
     <script>
         // Configuration - Update this with your backend endpoint
-        const BACKEND_ENDPOINT = 'http://localhost:5000/api/auth/google-login'; // Replace with your backend URL
+        const BACKEND_ENDPOINT = 'http://localhost:3000/api/auth/google-login'; // Replace with your backend URL
 
         const loginBtn = document.getElementById('login-btn');
         loginBtn.addEventListener('click', (e) => loginWithGoogle(e));
@@ -208,13 +208,12 @@
             hideError();
 
             try {
-                // Call your backend endpoint
+                // Call your backend endpoint and wait for response
                 const response = await fetch(BACKEND_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     }
-                    // Your backend will handle the OAuth flow
                 });
 
                 if (!response.ok) {

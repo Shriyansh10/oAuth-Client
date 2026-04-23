@@ -10,7 +10,6 @@ async function main() {
     const server = http.createServer(app);
     await fetchOidcConfiguration();
     const db = drizzle(process.env.DATABASE_URL!);
-    console.log(db)
     server.listen(port , () => {
       console.log(
         `Server is running at Port ${process.env.PORT || 5000} in ${process.env.NODE_ENV} mode`,
