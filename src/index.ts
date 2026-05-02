@@ -6,7 +6,7 @@ import fetchOidcConfiguration from "./common/config/oidc-config.js";
 
 async function main() {
   try {
-    const port = process.env.PORT || 5000;
+    const port = process.env.PORT || 3000;
     const server = http.createServer(app);
     await fetchOidcConfiguration();
     const db = drizzle(process.env.DATABASE_URL!);

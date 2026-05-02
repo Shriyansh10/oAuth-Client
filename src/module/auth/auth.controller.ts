@@ -23,3 +23,4 @@ const loginCallback = async (req: Request, res: Response) =>{
 }
 
 export { loginWithGoogle, loginCallback };
+

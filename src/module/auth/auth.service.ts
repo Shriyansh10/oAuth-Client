@@ -21,6 +21,7 @@ const callbackService = async (provider: string, code: string) => {
 };
 
 const exchangeCodeForTokens = async (code: string) => {
+  console.log('code', code, process.env.GOOGLE_CLIENT_SECRET!);
   const response = await fetch(token_endpoint, {
     method: "POST",
     headers: {
@@ -36,6 +37,7 @@ const exchangeCodeForTokens = async (code: string) => {
   });
   const data:Token = await response.json() as Token;
   if (!data) throw new Error("data is empty");
+  console.log('data', data);
   return data;
 };
 
